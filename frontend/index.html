@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SolarSurd AI</title>
+  <link rel="stylesheet" href="style.css?v=20260924-layout2">
+  <link rel="stylesheet" href="/assets/dashboard.css?v=20260924-pages">
+</head>
+<body>
+  <header>
+    <div><span class="eyebrow">SOLARSURD AI</span><h1>Solar performance</h1><p>Evidence-led site monitoring</p></div>
+    <div class="header-actions"><span id="accountLabel"></span><a href="/docs">API docs ↗</a><button id="themeToggle" type="button" class="header-button">Dark mode</button><button id="printReport" type="button" class="header-button">Save report as PDF</button><button id="logoutButton" type="button" class="header-button">Sign out</button></div>
+  </header>
+  <nav class="main-nav" aria-label="Main navigation">
+    <a href="#home" data-page-link="home">Home</a><a href="#dashboard" data-page-link="dashboard">Dashboard</a><a href="#upload" data-page-link="upload">Upload data</a>
+    <a href="#performance" data-page-link="performance">Performance</a><a href="#cleaning" data-page-link="cleaning">Cleaning trend</a><a href="#timing" data-page-link="timing">Appliance timing</a><a href="#savings" data-page-link="savings">Savings & bills</a><a href="#warranty" data-page-link="warranty">Warranty</a><a href="#discom" data-page-link="discom">Export credit</a>
+    <a href="#weather" data-page-link="weather">Weather</a><a href="#forecast" data-page-link="forecast">Forecast</a><a href="#investigations" data-page-link="investigations">Investigations</a><a href="#fleet" data-page-link="fleet">Fleet & health</a><a href="#upload" data-page-link="upload">Upload / sites</a><a href="#integrations" data-page-link="integrations">Integrations</a><a href="#about" data-page-link="about">About / method</a>
+  </nav>
+  <div class="site-toolbar"><label for="siteSelect">Selected site</label><select id="siteSelect" aria-label="Saved sites"><option value="">No saved sites yet — create or load a sample</option></select><a href="#upload">Manage sites and data</a></div>
+  <main>
+    <section id="home" class="welcome route-view" data-route="home">
+      <span class="eyebrow">SOLAR OPERATIONS, MADE EXPLAINABLE</span>
+      <h2>See what your solar data says.</h2>
+      <p>Upload inverter or meter readings to review measured energy, a simple baseline forecast, and investigation signals. Weather is external model context; it is not a panel sensor.</p>
+      <a class="primary-link" href="#upload">Set up or load sample data ↓</a>
+      <p class="muted">No solar equipment or CSV yet? Load the included public PVDAQ example to explore the dashboard.</p>
+    </section>
+    <section id="upload" class="setup route-view" data-route="upload" hidden>
+      <h2>Upload data · connect a site</h2>
+      <p class="muted">Create a site using the location and DC panel capacity. Latitude/longitude are decimal degrees (example: New Delhi 28.61, 77.21); choose the timezone from an IANA name such as Asia/Kolkata. Inverter size, tilt, azimuth, date, and model are optional.</p>
+      <form id="siteForm">
+        <input name="name" placeholder="Site name" aria-label="Site name" title="A name you will recognize, e.g. College rooftop" required>
+        <input name="latitude" type="number" step="any" placeholder="Latitude (e.g. 28.61)" aria-label="Latitude" title="Decimal latitude from -90 to 90; find it by searching the site in a map app" required>
+        <input name="longitude" type="number" step="any" placeholder="Longitude (e.g. 77.21)" aria-label="Longitude" title="Decimal longitude from -180 to 180; find it by searching the site in a map app" required>
+        <input name="timezone" placeholder="Timezone (e.g. Asia/Kolkata)" aria-label="Timezone" value="UTC" required>
+        <input name="capacity_kw" type="number" step="any" min="0.01" placeholder="DC capacity (kWp)" aria-label="DC capacity in kWp" required>
+        <label class="field-label">Expected system performance <span>0.75–0.85 typical</span><input name="performance_ratio" type="number" min="0.5" max="1" step="0.01" value="0.8" aria-label="Performance ratio"></label>
+        <input name="inverter_capacity_kw" type="number" step="any" min="0.01" placeholder="Inverter capacity (optional kW)" aria-label="Inverter capacity in kW">
+        <input name="tilt_deg" type="number" step="any" min="0" max="90" placeholder="Tilt (optional degrees)" aria-label="Tilt in degrees">
+        <input name="azimuth_deg" type="number" step="any" min="0" max="360" placeholder="Azimuth (optional degrees)" aria-label="Azimuth in degrees">
+        <input name="commissioned_on" type="date" aria-label="Commissioning date (optional)" title="Commissioning date (optional)">
+        <input name="module_model" placeholder="Module model (optional)" aria-label="Module model">
+        <input name="inverter_model" placeholder="Inverter model (optional)" aria-label="Inverter model">
+        <button>Create site</button>
+      </form>
+      <div class="row">
+        <label class="upload">Choose telemetry CSV<input type="file" id="csv" accept=".csv"></label>
+        <a class="upload" href="sample_synthetic_demo.csv" download>Download synthetic demo CSV</a>
+        <button id="loadPvdaq" type="button" class="secondary-button">Load real public PVDAQ sample</button>
+      </div>
+      <div id="dropZone" class="drop-zone" tabindex="0"><span class="drop-icon">⇧</span><b>Drop an inverter or meter CSV here</b><span>or choose a CSV above · timestamp plus power or energy columns</span></div>
+      <div id="csvPreview" class="csv-preview" hidden></div>
+      <p id="siteMessage" class="muted">Enter your site details above, then select Create site. Your saved sites will appear in this list.</p>
+      <p class="muted">CSV needs a date/time column and at least one AC/DC power or energy column. The synthetic file is invented demo data. The public sample button adds an attributed, measured NREL PVDAQ site as a separate saved site.</p>
+    </section>
+    <section id="dashboard" class="cards page-section route-view" data-route="dashboard" hidden>
+      <article><label>Energy recorded</label><strong id="energy">—</strong><small id="yield">Specific yield —</small></article>
+      <article><label>Data completeness</label><strong id="quality">—</strong><small>Completeness only; not accuracy</small></article>
+      <article><label>Conversion</label><strong id="efficiency">—</strong><small>AC ÷ DC, when available</small></article>
+    </section>
+    <section id="savings" class="setup simulator route-view" data-route="savings" hidden>
+      <h2>Solar Digital Twin · What-if calculator</h2>
+      <p class="muted">Compare your saved system with a proposed panel setup. This transparent estimate uses your entered sun-hours; it is not a weather forecast or a PV engineering design.</p>
+      <form id="simulatorForm">
+        <input name="panel_count" type="number" min="1" step="1" placeholder="Proposed panel count" aria-label="Proposed panel count" required>
+        <input name="panel_wattage_w" type="number" min="1" step="1" placeholder="Each panel watts (e.g. 500)" aria-label="Panel wattage in watts" required>
+        <input name="peak_sun_hours" type="number" min="0.1" max="12" step="0.1" placeholder="Peak sun-hours/day (demo: 5)" aria-label="Peak sun hours per day" required>
+        <input name="losses_pct" type="number" min="0" max="60" step="0.5" value="14" placeholder="Estimated losses %" aria-label="Estimated system losses percent">
+        <input name="inverter_capacity_kw" type="number" min="0.1" step="0.1" placeholder="Proposed inverter kW (optional)" aria-label="Proposed inverter capacity in kilowatts">
+        <input name="tariff_inr_per_kwh" type="number" min="0" step="0.01" placeholder="Import tariff ₹/kWh" aria-label="Electricity import tariff in rupees per kilowatt hour" required>
+        <input name="export_tariff_inr_per_kwh" type="number" min="0" step="0.01" placeholder="Export tariff ₹/kWh (optional)" aria-label="Electricity export tariff">
+        <input name="self_consumption_pct" type="number" min="0" max="100" step="1" value="100" placeholder="Solar used at home %" aria-label="Self consumption percent">
+        <input name="installed_cost_inr" type="number" min="0" step="1000" placeholder="Installation cost ₹ (optional)" aria-label="Installation cost in rupees">
+        <input name="monthly_bill_inr" type="number" min="0" step="100" placeholder="Current monthly bill ₹ (optional)" aria-label="Current electricity bill">
+        <input name="grid_co2_kg_per_kwh" type="number" min="0" max="5" step="0.001" placeholder="Grid CO₂ factor kg/kWh (optional)" aria-label="Grid CO2 emissions factor">
+        <button type="submit">Compare systems</button>
+      </form>
+      <p class="muted">To try it: 14 panels × 500 W, 5 sun-hours/day, ₹8/kWh. These are demo assumptions; use your local tariff and a trusted solar-resource estimate for planning.</p>
+      <div id="simulatorResult" class="muted">Create or select a site to compare its saved capacity with a proposed system.</div>
+      <div class="billing-divider"><span>MEASURED MONTHLY VALUE</span></div>
+      <h2>Bill & savings tracker</h2><p class="muted">Add your bill figures for a month. Daily readings determine solar generation; when none exist, the app shows ₹0 measured savings instead of fabricating production.</p>
+      <form id="billForm" class="feature-form bill-form"><label>Bill month<input name="month" type="month" required></label><label>Grid units consumed (kWh)<input name="consumed_kwh" type="number" min="0" step="0.1" required></label><label>Export units on bill (kWh)<input name="exported_kwh" type="number" min="0" step="0.1" required></label><label>Import tariff (₹/kWh)<input name="import_tariff" type="number" min="0" step="0.01" required></label><label>Export rate (₹/kWh)<input name="export_tariff" type="number" min="0" step="0.01" required></label><label>Export credit printed (₹)<input name="export_credit_inr" type="number" min="0" step="0.01" required></label><label>Solar used at home (%)<input name="self_use_pct" type="number" min="0" max="100" value="60" required><small>Used only when bill export units are blank/zero.</small></label><button>Save monthly bill</button></form>
+      <div class="metric-strip"><article><small>Total measured generation</small><strong id="savingsGeneration">—</strong></article><article><small>Estimated solar value</small><strong id="savingsTotal">—</strong></article><article><small>Months entered</small><strong id="savingsMonths">—</strong></article></div><article class="chart-card"><h3>Monthly solar bill value</h3><canvas id="savingsChart" height="250"></canvas><p id="savingsMessage" class="muted">Bill tariffs and daily generation are combined. Self-use split is an assumption unless you have a meter.</p></article>
+    </section>
+    <section class="grid route-view" data-route="dashboard" hidden><article><h2>Production history</h2><canvas id="chart" height="220"></canvas><p class="chart-legend"><span>Measured AC</span><span>Capacity/irradiance baseline</span></p><p class="muted">Uploaded readings only; the baseline is not a pvlib-calibrated expectation.</p></article></section>
+    <section id="weather" class="grid route-view" data-route="weather" hidden><article><h2>Weather context</h2><div id="weatherStatus" class="muted">Select a site to load weather context.</div><canvas id="weatherChart" height="190"></canvas><p id="bestWindow" class="insight-line">Select a site for the model's brightest forecast hours.</p></article></section>
+    <section id="forecast" class="grid route-view" data-route="forecast" hidden><article><h2>Forecast <label class="horizon-label">Next <select id="forecastHorizon" aria-label="Forecast horizon"><option value="6">6 hours</option><option value="24" selected>24 hours</option><option value="48">48 hours</option></select></label></h2><div id="forecastText" class="muted">History required. Persistence is a baseline, not a calibrated interval.</div><canvas id="forecastChart" height="190"></canvas></article></section>
+    <section id="performance" class="feature-page route-view" data-route="performance" hidden>
+      <div class="feature-heading"><div><span class="eyebrow">DAILY ENERGY · MEASURED VS WEATHER-BASED</span><h2>Performance check</h2><p>Enter the day’s meter or inverter total, then compare it with historical solar radiation for your site.</p></div><div class="feature-mark">↗</div></div>
+      <form id="dailyForm" class="feature-form"><label>Reading date<input name="day" type="date" required></label><label>Generated energy<input name="actual_kwh" type="number" min="0" step="0.01" placeholder="e.g. 18.4 kWh" required></label><button>Save daily reading</button><button id="demoReadings" type="button" class="secondary-button">Try 14-day demo</button></form>
+      <div class="metric-strip"><article><small>Measured days</small><strong id="perfDays">—</strong></article><article><small>Latest actual / expected</small><strong id="perfLatest">—</strong></article><article><small>Drop signal</small><strong id="perfStatus">Select a site</strong></article></div>
+      <article class="chart-card"><div class="card-title"><h3>Daily generated energy</h3><span class="legend-dot actual-dot">Actual</span><span class="legend-dot expected-dot">Expected</span><span class="legend-dot synthetic-dot">Demo only</span></div><canvas id="performanceChart" height="260"></canvas><p id="performanceMessage" class="muted">Expected energy needs historical irradiance from the weather service.</p></article>
+    </section>
+    <section id="cleaning" class="feature-page route-view" data-route="cleaning" hidden>
+      <div class="feature-heading"><div><span class="eyebrow">SLOW TREND · NORMALIZED FOR SUNLIGHT</span><h2>Cleaning review</h2><p>Compares normalized output over time, separately from sudden performance drops.</p></div><div class="feature-mark">◌</div></div>
+      <div class="trend-panel"><div class="trend-gauge"><div><strong id="cleanDrop">—</strong><small>slow decline</small></div></div><div><div id="cleanResult" class="status-pill">Select a site to calculate</div><p id="cleanMessage" class="muted">Needs 10 or more actual daily readings paired with historical irradiance in a 14-day window.</p></div></div>
+      <article class="chart-card"><h3>Normalized daily output</h3><canvas id="cleanChart" height="240"></canvas></article>
+    </section>
+    <section id="timing" class="feature-page route-view" data-route="timing" hidden>
+      <div class="feature-heading"><div><span class="eyebrow">NEXT 24 HOURS · MODELLED IRRADIANCE</span><h2>Appliance timing</h2><p>Pick a flexible household load and find the strongest continuous three-hour solar window.</p></div><div class="feature-mark">☀</div></div>
+      <div class="timing-controls"><label>Flexible appliance<select id="applianceType"><option value="geyser">Water heater · 2 kW</option><option value="washing">Washing machine · 0.5 kW</option><option value="dishwasher">Dishwasher · 1.5 kW</option><option value="custom">Custom load</option></select></label><label id="customLoadWrap" hidden>Load (kW)<input id="customLoad" type="number" min="0.1" max="15" step="0.1" value="1"></label><button id="refreshTiming" type="button">Find sunny window</button></div>
+      <div class="window-card"><div class="sun-orbit">☀</div><div><small>BEST CONTINUOUS WINDOW</small><strong id="bestWindowTime">—</strong><span id="windowEnergy">Forecast your site to see estimated solar energy</span></div><div class="load-match"><span id="loadCoverage">—</span><small>load coverage estimate</small></div></div>
+      <article class="chart-card"><h3>Hourly solar forecast & appliance load</h3><canvas id="timingChart" height="240"></canvas><p id="timingMessage" class="muted">Weather forecast is model-derived and can change.</p></article>
+    </section>
+    <section id="warranty" class="feature-page route-view" data-route="warranty" hidden>
+      <div class="feature-heading"><div><span class="eyebrow">MANUFACTURER CURVE · ACTUALS KEPT SEPARATE</span><h2>Warranty degradation</h2><p>Enter the minimum retained output printed on your panel warranty. Actual yearly totals are based only on daily readings.</p></div><div class="feature-mark">⌁</div></div>
+      <form id="warrantyForm" class="feature-form"><label>Year 1 guarantee %<input name="p1" type="number" min="0" max="150" step="0.1" value="98" required></label><label>Year 10 guarantee %<input name="p10" type="number" min="0" max="150" step="0.1" value="90" required></label><label>Year 25 guarantee %<input name="p25" type="number" min="0" max="150" step="0.1" value="80" required></label><button>Save warranty curve</button><button id="projectWarranty" type="button" class="secondary-button">Build labelled projection</button></form>
+      <div class="warranty-legend"><span class="legend-dot actual-dot">Measured yearly generation</span><span class="legend-dot expected-dot">Manufacturer guarantee</span><span class="legend-dot synthetic-dot">Synthetic projection</span></div><article class="chart-card"><h3>Output retention by system year</h3><canvas id="warrantyChart" height="260"></canvas><p id="warrantyMessage" class="muted">Synthetic future years are projections based on your entered guarantee and year-one actual generation; they are not readings.</p></article>
+    </section>
+    <section id="discom" class="feature-page route-view" data-route="discom" hidden>
+      <div class="feature-heading"><div><span class="eyebrow">BILL RECONCILIATION · MONTHLY</span><h2>Export-credit checker</h2><p>Compare exported units × your export rate against the credit printed on your DISCOM bill.</p></div><div class="feature-mark">₹</div></div>
+      <div class="meter-layout"><div class="meter-visual"><div class="meter-ring"><span id="discomVariance">—</span></div><small>credit variance</small></div><div class="meter-readings"><div><small>Estimated exported solar</small><strong id="discomEstimated">—</strong></div><div><small>Bill credit printed</small><strong id="discomPrinted">—</strong></div><div><small>Export units × tariff</small><strong id="discomCalculated">—</strong></div></div></div>
+      <div id="discomStatus" class="status-pill">Add a monthly bill to start</div><p id="discomMessage" class="muted">For best results enter export meter units from the bill. Without these, the app estimates exports from generation and your self-use assumption.</p>
+    </section>
+    <section id="investigations" class="grid route-view" data-route="investigations" hidden><article><h2>Investigations</h2><div id="anomalies" class="muted">No site selected.</div></article></section>
+    <section id="fleet" class="grid feature-grid route-view" data-route="fleet" hidden>
+      <article><h2>Fleet overview</h2><p class="muted">Compare saved sites by recorded energy and data completeness.</p><div id="fleetList" class="fleet-list">Loading sites…</div></article>
+      <article><h2>Health & degradation</h2><div id="healthStatus" class="health-empty">Select a site to check available history.</div><p class="muted">A degradation rate needs a consistent long-term yield history; short uploads are not enough to estimate it.</p></article>
+      <article><h2>Cleaning opportunity</h2><div id="cleaningStatus" class="health-empty">Needs measured irradiance and a clean reference period.</div><p class="muted">Underperformance by itself does not identify dirt. Treat any opportunity as an estimate, not a confirmed soiling diagnosis.</p></article>
+      <article><h2>In-app alerts</h2><div id="alertStatus" class="health-empty">Persistent underperformance signals appear under Investigations.</div><p class="muted">Email and phone alerts are not connected.</p></article>
+    </section>
+    <section id="integrations" class="setup integrations route-view" data-route="integrations" hidden>
+      <h2>Integrations</h2>
+      <div class="table-scroll"><table><thead><tr><th>Connection</th><th>Status</th><th>What it does</th></tr></thead><tbody>
+        <tr><td>CSV upload</td><td><span class="status-live">Available</span></td><td>Inverter or meter export, with field validation.</td></tr>
+        <tr><td>Open-Meteo</td><td><span class="status-live">Available</span></td><td>External forecast context by saved coordinates.</td></tr>
+        <tr><td>Vendor cloud APIs</td><td><span class="status-planned">Not connected</span></td><td>Requires provider-specific authorization and testing.</td></tr>
+        <tr><td>Modbus / SunSpec gateway</td><td><span class="status-planned">Planned</span></td><td>Requires compatible inverter hardware and an edge agent.</td></tr>
+        <tr><td>Email / SMS alerts</td><td><span class="status-planned">Not connected</span></td><td>Investigation signals are visible in this app only.</td></tr>
+      </tbody></table></div>
+    </section>
+    <section id="about" class="setup about route-view" data-route="about" hidden>
+      <h2>About · how to read this dashboard</h2>
+      <div class="method-grid">
+        <div><h3>Measured data</h3><p>Energy and power summaries come from uploaded CSV readings or the clearly named public PVDAQ sample. Data completeness checks whether fields are present; it does not certify meter accuracy.</p></div>
+        <div><h3>Forecast</h3><p>The current forecast repeats a recent measured-power average. Its range is the historical minimum and maximum, not a calibrated prediction interval. Weather is fetched separately from Open-Meteo when the computer can reach it.</p></div>
+        <div><h3>Investigations</h3><p>Persistent gaps between measured power and a simple capacity/irradiance baseline are investigation signals only. They do not prove a fault, shading, or soiling.</p></div>
+        <div><h3>Data and limitations</h3><p>The public example is NREL PVDAQ system 1245, New Orleans, July 1–20, 2012, sampled at about five-minute intervals. It is old public research data, not a connection to your equipment. PVDAQ attribution and license: <a href="https://catalog.data.gov/dataset/photovoltaic-data-acquisition-pvdaq-public-datasets" target="_blank" rel="noreferrer">Data.gov dataset record</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>.</p></div>
+      </div>
+      <p class="muted">CSV upload is the implemented inverter-data integration. Vendor APIs, edge gateways and email/SMS notifications are not connected. Use “Save report as PDF” to print this view to a PDF file.</p>
+    </section>
+  </main>
+  <script src="app.js?v=20260924-features1"></script>
+  <script src="solar-features.js?v=20260924-features1"></script>
+</body>
+</html>

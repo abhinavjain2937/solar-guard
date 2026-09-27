@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign in · SolarSurd AI</title>
+  <link rel="stylesheet" href="style.css?v=20260924-login">
+  <link rel="stylesheet" href="/assets/auth.css?v=20260924-password-only">
+</head>
+<body class="login-page">
+  <main class="auth-layout">
+    <section class="auth-story">
+      <a class="auth-brand" href="/login"><span class="brand-mark">S</span><span>SOLARSURD <b>AI</b></span></a>
+      <div class="auth-copy">
+        <span class="eyebrow">SOLAR PERFORMANCE, CLEARLY EXPLAINED</span>
+        <h1>Know what your solar data is telling you.</h1>
+        <p>One workspace for production history, weather context and evidence-led investigations.</p>
+        <div class="solar-illustration" aria-hidden="true">
+          <div class="sun"></div><div class="sun-ray ray-one"></div><div class="sun-ray ray-two"></div>
+          <div class="panel panel-back"></div><div class="panel panel-front"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="ground"></div>
+        </div>
+      </div>
+      <div class="auth-story-foot">A local prototype · transparent metrics · user-controlled CSV data</div>
+    </section>
+    <section class="auth-card-wrap">
+      <form id="authForm" class="auth-card">
+        <span class="eyebrow">YOUR WORKSPACE</span>
+        <h2 id="authTitle">Welcome back</h2>
+        <p id="authHint" class="muted">Sign in to continue to your solar dashboard.</p>
+        <label>Email address<input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+        <label>Password<input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required></label>
+        <p id="authNotice" class="auth-notice" role="status"></p>
+        <button id="authSubmit" type="submit">Sign in</button>
+        <p class="auth-switch"><span id="switchPrompt">New to SolarSurd?</span> <button id="switchMode" type="button" class="text-button">Create an account</button></p>
+        <div class="auth-local-note"><b>Local prototype account</b><br>Email/password remains available. Local sessions expire after 12 hours. The first account adopts sites already in this local database; later accounts only see their own sites.</div>
+      </form>
+    </section>
+  </main>
+  <script src="auth.js?v=20260924-password-only"></script>
+</body>
+</html>
